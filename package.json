@@ -1,0 +1,208 @@
+{
+  "name": "betterspool",
+  "publisher": "Mateusz-Blazejczyk",
+  "displayName": "BetterSpool",
+  "description": "Browse and view IBM i (AS/400) spooled files, on top of Db2 for IBM i / Code for IBM i.",
+  "version": "0.0.1",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mblazejczyk/BetterSpool.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mblazejczyk/BetterSpool/issues"
+  },
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "ibmi",
+    "as400",
+    "iseries",
+    "spool",
+    "db2"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "betterspool",
+          "title": "BetterSpool",
+          "icon": "resources/spool.svg"
+        }
+      ]
+    },
+    "views": {
+      "betterspool": [
+        {
+          "id": "betterspool.filter",
+          "type": "webview",
+          "name": "Filter"
+        },
+        {
+          "id": "betterspool.spools",
+          "name": "Spooled Files"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "betterspool.spools",
+        "when": "!betterspool.connected",
+        "contents": "Not connected to IBM i.\nConnect to a system with Code for IBM i – spooled files will load automatically.\n[Diagnose connection](command:betterspool.diagnose)"
+      },
+      {
+        "view": "betterspool.spools",
+        "when": "betterspool.connected && betterspool.needsSqlJob",
+        "contents": "Connected, but there is no active Db2 for i SQL job.\n[Start SQL Job](command:betterspool.startSqlJob)\nSpooled files will load automatically once the job is ready."
+      },
+      {
+        "view": "betterspool.spools",
+        "when": "betterspool.ready",
+        "contents": "Set the filter and press Search.\n[Load spooled files](command:betterspool.refresh)\n[Diagnose connection](command:betterspool.diagnose)"
+      }
+    ],
+    "commands": [
+      {
+        "command": "betterspool.refresh",
+        "title": "Refresh Spooled Files",
+        "category": "BetterSpool",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "betterspool.startSqlJob",
+        "title": "Start Db2 for i SQL Job",
+        "category": "BetterSpool",
+        "icon": "$(database)"
+      },
+      {
+        "command": "betterspool.resetFilter",
+        "title": "Reset Filter",
+        "category": "BetterSpool",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "betterspool.showSpool",
+        "title": "Show Spool",
+        "category": "BetterSpool",
+        "icon": "$(eye)"
+      },
+      {
+        "command": "betterspool.reloadSpool",
+        "title": "Reload Spool Content",
+        "category": "BetterSpool",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "betterspool.diagnose",
+        "title": "Diagnose SQL Backends",
+        "category": "BetterSpool",
+        "icon": "$(debug)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "betterspool.refresh",
+          "when": "view == betterspool.spools",
+          "group": "navigation@1"
+        },
+        {
+          "command": "betterspool.diagnose",
+          "when": "view == betterspool.spools",
+          "group": "z_debug"
+        },
+        {
+          "command": "betterspool.resetFilter",
+          "when": "view == betterspool.filter",
+          "group": "navigation@1"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "betterspool.showSpool",
+          "when": "view == betterspool.spools && viewItem == spoolFile",
+          "group": "inline"
+        },
+        {
+          "command": "betterspool.showSpool",
+          "when": "view == betterspool.spools && viewItem == spoolFile",
+          "group": "1_open"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "betterspool.reloadSpool",
+          "when": "resourceScheme == betterspool",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "betterspool.reloadSpool",
+          "when": "resourceScheme == betterspool"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "BetterSpool",
+      "properties": {
+        "betterspool.sqlBackend": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "db2i",
+            "codeForIBMi"
+          ],
+          "enumDescriptions": [
+            "Use Db2 for IBM i if installed (requires an active SQL job), otherwise Code for IBM i.",
+            "Only use the Db2 for IBM i extension (requires an active SQL job).",
+            "Only use the Code for IBM i connection (connection.runSQL, no SQL job needed)."
+          ],
+          "default": "auto",
+          "description": "Which extension is used to run SQL against IBM i."
+        },
+        "betterspool.queryTimeout": {
+          "type": "number",
+          "default": 60,
+          "minimum": 0,
+          "description": "Seconds to wait for an SQL request before giving up (0 = no timeout)."
+        },
+        "betterspool.maxRows": {
+          "type": "number",
+          "default": 500,
+          "minimum": 1,
+          "description": "Default maximum number of spooled files to list."
+        },
+        "betterspool.trimTrailingSpaces": {
+          "type": "boolean",
+          "default": true,
+          "description": "Trim trailing blanks from spooled file lines."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "~1.100.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "typescript-eslint": "^8.56.1",
+    "eslint": "^9.39.3",
+    "typescript": "^5.9.3",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2"
+  }
+}

@@ -19,6 +19,23 @@ Browse and view IBM i (AS/400) spooled files, on top of Db2 for IBM i / Code for
 - [Code for IBM i](https://marketplace.visualstudio.com/items?itemName=HalcyonTechLtd.code-for-ibmi)
 
 
+## SQL used
+
+- List: `QSYS2.OUTPUT_QUEUE_ENTRIES_BASIC`
+- Content: `SYSTOOLS.SPOOLED_FILE_DATA`
+
+Every statement is logged in the **BetterSpool** output channel.
+
+## Settings
+
+| Setting | Default | Description |
+|---|---|---|
+| `betterspool.sqlBackend` | `auto` | `auto` (Db2 for i, then Code for IBM i), `db2i`, `codeForIBMi` |
+| `betterspool.maxRows` | `500` | Default max rows in the list |
+| `betterspool.queryTimeout` | `60` | Seconds before an SQL request is abandoned (0 = none) |
+| `betterspool.trimTrailingSpaces` | `true` | Trim trailing blanks in spool lines |
+
+
 ## ⚠️ Disclaimer & License
 
 This is just a small project created for fun and utility. **Use at your own risk!**
